@@ -1,39 +1,27 @@
-import React, {useMemo, useState} from 'react'
+import React, {useEffect, useMemo, useState} from 'react'
 import './styles/App.css'
 import PostList from "./components/PostList";
 import PostForm from "./components/PostForm";
-import MySelect from "./components/UI/select/MySelect";
-import MyInput from "./components/UI/input/MyInput";
 import PostFilter from "./components/PostFilter";
 import MyModal from "./components/UI/MyModal/MyModal";
 import MyButton from "./components/UI/button/MyButton";
+import {usePosts} from "./hooks/usePosts";
+import axios from "axios";
 
 const App = () => {
-    const [posts, setPosts] = useState([
-        {id: 1, title: 'a JavaScript', body: '6 Description 1'},
-        {id: 2, title: 'b JavaScript 2', body: '5 Description 2'},
-        {id: 3, title: 'c JavaScript 3', body: '4 Description 3'},
-        {id: 4, title: 'd JavaScript 4', body: '3 Description 4'},
-        {id: 5, title: 'e JavaScript 5', body: '2 Description 5'},
-    ]);
-
-    const [selectedSort, setSelectedSort] = useState('');
-    const [searchQuery, setSearchQuery] = useState('');
+    const [posts, setPosts] = useState([]);
     const [filter, setFilter] = useState({sort: '', query: ''});
     const [modal, setModal] = useState(false);
+    const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query);
 
-    const sortedPosts = useMemo(() => {
-        console.log(123)
+    async function fetchPosts() {
+        const response = await axios.get('https://jsonplaceholder.typicode.com/posts');
+        setPosts(response.data);
+    }
 
-        if (filter.sort) {
-            return [...posts].sort((a, b) => a[filter.sort].localeCompare(b[filter.sort]));
-        }
-        return posts;
-    }, [filter.sort, posts]);
+    useEffect(() => {
 
-    const sortedAndSearchedPosts = useMemo(() => {
-        return sortedPosts.filter(post => post.title.toLowerCase().includes(filter.query));
-    }, [filter.query, sortedPosts]);
+    }, []);
 
     const createPost = (newPost) => {
         setPosts([...posts, newPost]);
@@ -46,7 +34,8 @@ const App = () => {
 
     return (
         <div className='App'>
-            <MyButton onClick={() => setModal(true)}>
+            <button onClick={fetchPosts}>GET POSTS</button>
+            <MyButton style={{marginTop: 30}} onClick={() => setModal(true)}>
                 Создать пост
             </MyButton>
             <MyModal visible={modal} setVisible={setModal}>
